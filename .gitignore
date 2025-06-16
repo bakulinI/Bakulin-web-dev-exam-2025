@@ -1,0 +1,7 @@
+/venv
+.idea
+.idea/
+.idea/workspace.xml
+/idea
+__pycache__
+.idea/vcs.xml
