@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Список животных</h1>
+        </div>
+        {% if current_user.is_authenticated and current_user.role_name == 'Администратор' %}
+        <div class="col-auto">
+            <a href="{{ url_for('animals.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Добавить животное
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for animal in animals %}
+        <div class="col">
+            <div class="card h-100">
+                {% if animal.photo_filename %}
+                <img src="{{ url_for('static', filename='uploads/' + animal.photo_filename) }}" 
+                     class="card-img-top" alt="{{ animal.name }}"
+                     style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 200px;">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">{{ animal.name }}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            {{ animal.breed }} • {{ animal.age_months }} месяцев • 
+                            {{ 'Самец' if animal.gender == 'male' else 'Самка' }}
+                        </small>
+                    </p>
+                    <p class="card-text">{{ animal.description|truncate(100) }}</p>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('animals.view', id=animal.id) }}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                        
+                        {% if current_user.is_authenticated and current_user.role_name in ['Администратор', 'Модератор'] %}
+                        <a href="{{ url_for('animals.edit', id=animal.id) }}" 
+                           class="btn btn-outline-warning">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        {% endif %}
+                        
+                        {% if current_user.is_authenticated and current_user.role_name == 'Администратор' %}
+                        <button type="button" class="btn btn-outline-danger" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteModal{{ animal.id }}">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if current_user.is_authenticated and current_user.role_name == 'Администратор' %}
+        <!-- Модальное окно подтверждения удаления -->
+        <div class="modal fade" id="deleteModal{{ animal.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Подтверждение удаления</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы уверены, что хотите удалить животное "{{ animal.name }}"?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <form action="{{ url_for('animals.delete', id=animal.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if total_pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('animals.index', page=current_page-1) }}">Предыдущая</a>
+            </li>
+            {% endif %}
+            
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('animals.index', page=page) }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('animals.index', page=current_page+1) }}">Следующая</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

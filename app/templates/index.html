@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+    {% set status_texts = {
+        'available': 'Доступно для усыновления',
+        'adoption': 'На рассмотрении',
+        'adopted': 'Усыновлено'
+    } %}
+    
+    {% set gender_texts = {
+        'male': 'Самец',
+        'female': 'Самка'
+    } %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Доступные для усыновления животные</h1>
+        {% if current_user.is_authenticated and current_user.role_name in ['admin', 'moderator'] %}
+            <a href="{{ url_for('animals.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Добавить животное
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Фильтры -->
+    <form class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" class="form-control" name="name" placeholder="Имя" value="{{ request.args.get('name', '') }}">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" name="status">
+                <option value="">Все статусы</option>
+                <option value="available" {% if request.args.get('status') == 'available' %}selected{% endif %}>Доступно</option>
+                <option value="adoption" {% if request.args.get('status') == 'adoption' %}selected{% endif %}>На рассмотрении</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Фильтр</button>
+        </div>
+    </form>
+
+    <!-- Список животных -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for animal in animals %}
+            <div class="col">
+                <div class="card h-100 animal-card">
+                    {% if animal.photos %}
+                        <img src="{{ url_for('static', filename='uploads/' + animal.photos[0].filename) }}" 
+                             class="card-img-top" 
+                             style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-center py-5" style="height: 200px;">
+                            <i class="bi bi-image text-light" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">{{ animal.name }}</h5>
+                        <p class="card-text">
+                            <span class="badge bg-{{ 'success' if animal.status == 'available' else 'warning' }}">
+                                {{ status_texts[animal.status] }}
+                            </span>
+                            <br>
+                            Порода: {{ animal.breed }}<br>
+                            Возраст: {{ animal.age_months }} мес.<br>
+                            Пол: {{ gender_texts[animal.gender] }}<br>
+                            Заявок: {{ animal.adoptions_count }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('animals.view', id=animal.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> Просмотр
+                            </a>
+                            
+                            {% if current_user.is_authenticated %}
+                                {% if current_user.role_name in ['admin', 'moderator'] %}
+                                    <a href="{{ url_for('animals.edit', id=animal.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i> Редактировать
+                                    </a>
+                                {% endif %}
+                                
+                                {% if current_user.role_name == 'admin' %}
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal-{{ animal.id }}">
+                                        <i class="bi bi-trash"></i> Удалить
+                                    </button>
+                                    
+                                    <!-- Модальное окно удаления -->
+                                    <div class="modal fade" id="deleteModal-{{ animal.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Удаление животного</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Вы уверены, что хотите удалить животное "{{ animal.name }}"?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                                                    <form action="{{ url_for('animals.delete', id=animal.id) }}" method="POST">
+                                                        <button type="submit" class="btn btn-danger">Да, удалить</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">Животных не найдено</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if pagination.pages > 1 %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=pagination.prev_num, **request.args) }}">
+                            &laquo;
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages() %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('index', page=page_num, **request.args) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=pagination.next_num, **request.args) }}">
+                            &raquo;
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

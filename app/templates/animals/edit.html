@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование животного{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Редактирование животного</h1>
+    
+    {% from "animals/_form.html" import animal_form %}
+    {{ animal_form(form, is_edit=True) }}
+</div>
+{% endblock %} 
