@@ -140,8 +140,12 @@ class AnimalRepository:
         cursor.close()
         return animals
 
-    def update(self, animal_id, animal_data):
-        cursor = self.db.connect().cursor()
+    def update(self, animal_id, animal_data, connection=None):
+        own_connection = False
+        if connection is None:
+            connection = self.db.connect()
+            own_connection = True
+        cursor = connection.cursor()
         cursor.execute("""
             UPDATE animals
             SET name = %s,
@@ -160,7 +164,8 @@ class AnimalRepository:
             animal_data.get('status', 'available'),
             animal_id
         ))
-        self.db.connect().commit()
+        if own_connection:
+            connection.commit()
         cursor.close()
 
     def delete(self, animal_id):

@@ -46,11 +46,16 @@
     </div>
 
     {% if not is_edit %}
-    <div class="mb-3">
-        <label for="photos" class="form-label">Фотографии</label>
-        <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*" required>
-        <div class="invalid-feedback">Пожалуйста, загрузите хотя бы одну фотографию</div>
+    <div class="mb-3" id="photos-container">
+        <label class="form-label">Фотографии</label>
+        <div class="input-group mb-2">
+            <input type="file" class="form-control" name="photos" accept="image/*" required>
+            <button class="btn btn-outline-danger remove-photo-btn d-none" type="button">Удалить</button>
+        </div>
     </div>
+    <button type="button" class="btn btn-outline-secondary mb-3" id="add-photo-btn">
+        <i class="bi bi-plus-circle"></i> Добавить ещё фото
+    </button>
     {% endif %}
 
     <div class="d-flex gap-2">
@@ -86,5 +91,29 @@
             }, false)
         })
     })()
+
+    // добавление/удаление полей для фото
+    document.addEventListener('DOMContentLoaded', function() {
+        const photosContainer = document.getElementById('photos-container');
+        const addPhotoBtn = document.getElementById('add-photo-btn');
+        if (addPhotoBtn && photosContainer) {
+            addPhotoBtn.addEventListener('click', function() {
+                const group = document.createElement('div');
+                group.className = 'input-group mb-2';
+                group.innerHTML = `
+                    <input type="file" class="form-control" name="photos" accept="image/*" required>
+                    <button class="btn btn-outline-danger remove-photo-btn" type="button">Удалить</button>
+                `;
+                photosContainer.appendChild(group);
+            });
+            photosContainer.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-photo-btn')) {
+                    e.preventDefault();
+                    const group = e.target.closest('.input-group');
+                    if (group) group.remove();
+                }
+            });
+        }
+    });
 </script>
-{% endmacro %} 
+{% endmacro %}

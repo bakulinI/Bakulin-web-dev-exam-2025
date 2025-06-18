@@ -36,4 +36,33 @@ footer {
 
 .animal-card:hover {
     transform: scale(1.02);
-} 
+}
+
+.animal-photo {
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #f8f9fa;
+    border-radius: 0.5rem 0.5rem 0 0;
+    display: block;
+}
+
+.animal-photo-large {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    display: block;
+}
+
+.centered-form-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar.bg-primary {
+    background-color: #a2640e !important;
+}

@@ -15,7 +15,7 @@
                     {% for photo in photos %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}">
                         <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
-                             class="d-block w-100" alt="{{ animal.name }}"
+                             class="animal-photo-large" alt="{{ animal.name }}"
                              data-viewer="true">
                     </div>
                     {% endfor %}
@@ -65,7 +65,7 @@
                 </div>
                 <div class="col-md-6">
                     <h5>Возраст</h5>
-                    <p>{{ animal.age_months }} месяцев</p>
+                    <p>{{ animal.age_months }} {{ animal.age_months|pluralize('месяц', 'месяца', 'месяцев') }}</p>
                 </div>
             </div>
             

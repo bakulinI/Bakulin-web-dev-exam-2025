@@ -8,58 +8,6 @@
         <div class="col">
             <h1>Список животных</h1>
         </div>
-        {% if current_user.is_authenticated and current_user.role_name == 'admin' %}
-        <div class="col-auto">
-            <a href="{{ url_for('animals.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Добавить животное
-            </a>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- фильтры -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ url_for('animals.index') }}" class="row g-3">
-                <div class="col-md-3">
-                    <label for="status" class="form-label">Статус</label>
-                    <select class="form-select" id="status" name="status">
-                        <option value="">Все статусы</option>
-                        <option value="available" {% if status == 'available' %}selected{% endif %}>Доступно для усыновления</option>
-                        <option value="adoption" {% if status == 'adoption' %}selected{% endif %}>В процессе усыновления</option>
-                        <option value="adopted" {% if status == 'adopted' %}selected{% endif %}>Усыновлено</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="sort_by" class="form-label">Сортировка по</label>
-                    <select class="form-select" id="sort_by" name="sort_by">
-                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Дате поступления</option>
-                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Имени</option>
-                        <option value="age_months" {% if sort_by == 'age_months' %}selected{% endif %}>Возрасту</option>
-                        <option value="breed" {% if sort_by == 'breed' %}selected{% endif %}>Породе</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="sort_order" class="form-label">Порядок</label>
-                    <select class="form-select" id="sort_order" name="sort_order">
-                        <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
-                        <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-funnel"></i> Применить
-                    </button>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <a href="{{ url_for('animals.index') }}" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-arrow-clockwise"></i> Сбросить
-                    </a>
-                </div>
-            </form>
-        </div>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -68,11 +16,9 @@
             <div class="card h-100">
                 {% if animal.photo_filename %}
                 <img src="{{ url_for('static', filename='uploads/' + animal.photo_filename) }}" 
-                     class="card-img-top" alt="{{ animal.name }}"
-                     style="height: 200px; object-fit: cover;">
+                     class="animal-photo card-img-top" alt="{{ animal.name }}">
                 {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
-                     style="height: 200px;">
+                <div class="animal-photo d-flex align-items-center justify-content-center">
                     <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                 </div>
                 {% endif %}
@@ -81,7 +27,7 @@
                     <h5 class="card-title">{{ animal.name }}</h5>
                     <p class="card-text">
                         <small class="text-muted">
-                            {{ animal.breed }} • {{ animal.age_months }} месяцев • 
+                            {{ animal.breed }} • {{ animal.age_months }} {{ animal.age_months|pluralize('месяц', 'месяца', 'месяцев') }} • 
                             {{ 'Самец' if animal.gender == 'male' else 'Самка' }}
                         </small>
                     </p>
@@ -156,6 +102,14 @@
         {% endif %}
         {% endfor %}
     </div>
+
+    {% if current_user.is_authenticated and current_user.role_name == 'admin' %}
+    <div class="my-4 text-center">
+        <a href="{{ url_for('animals.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Добавить животное
+        </a>
+    </div>
+    {% endif %}
 
     {% if total_pages > 1 %}
     <nav class="mt-4">

@@ -17,24 +17,16 @@ def init_app(app):
 @bp.route('/')
 def index():
     page = request.args.get('page', 1, type=int)
-    sort_by = request.args.get('sort_by', 'created_at')
-    sort_order = request.args.get('sort_order', 'desc')
-    status = request.args.get('status')
-    
     per_page = 6
-    animals = bp.animal_repository.get_paginated(page, sort_by, sort_order, status)
-    total = bp.animal_repository.get_total_count(status)
+    animals = bp.animal_repository.get_paginated(page)
+    total = bp.animal_repository.get_total_count()
     total_pages = (total + per_page - 1) // per_page
-    
     return render_template(
         'animals/index.html',
         animals=animals,
         total=total,
         page=page,
-        total_pages=total_pages,
-        sort_by=sort_by,
-        sort_order=sort_order,
-        status=status
+        total_pages=total_pages
     )
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -119,8 +111,6 @@ def edit(id):
 
             connection = bp.animal_repository.db.connect()
             try:
-                connection.start_transaction()
-                
                 bp.animal_repository.update(id, {
                     'name': name,
                     'description': description,
@@ -128,14 +118,13 @@ def edit(id):
                     'breed': breed,
                     'gender': gender,
                     'status': status
-                })
-                
+                }, connection=connection)
                 connection.commit()
+                
                 flash('Данные животного успешно обновлены', 'success')
                 return redirect(url_for('animals.view', id=id))
                 
             except Exception as e:
-                connection.rollback()
                 current_app.logger.error(f"Error updating animal: {str(e)}")
                 flash('При сохранении данных возникла ошибка. Проверьте корректность введённых данных.', 'danger')
                 return render_template('animals/edit.html', form=request.form, animal=animal)
