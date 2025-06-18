@@ -8,10 +8,8 @@ class DBConnector:
         self._connection = None
 
     def init_app(self, app):
-        """Инициализация коннектора с приложением Flask"""
         self.app = app
-        
-        # Регистрируем функцию для закрытия соединения при завершении запроса
+
         @app.teardown_appcontext
         def close_db_connection(error):
             if self._connection is not None:
@@ -19,7 +17,6 @@ class DBConnector:
                 self._connection = None
 
     def get_config(self):
-        """Получение конфигурации подключения к БД"""
         return {
             'user': self.app.config['MYSQL_USER'],
             'password': self.app.config['MYSQL_PASSWORD'],
@@ -31,7 +28,6 @@ class DBConnector:
         }
 
     def connect(self):
-        """Создание соединения с базой данных"""
         try:
             if self._connection is None or not self._connection.is_connected():
                 self._connection = mysql.connector.connect(**self.get_config())

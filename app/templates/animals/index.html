@@ -8,13 +8,58 @@
         <div class="col">
             <h1>Список животных</h1>
         </div>
-        {% if current_user.is_authenticated and current_user.role_name == 'Администратор' %}
+        {% if current_user.is_authenticated and current_user.role_name == 'admin' %}
         <div class="col-auto">
             <a href="{{ url_for('animals.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Добавить животное
             </a>
         </div>
         {% endif %}
+    </div>
+
+    <!-- фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('animals.index') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Статус</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Все статусы</option>
+                        <option value="available" {% if status == 'available' %}selected{% endif %}>Доступно для усыновления</option>
+                        <option value="adoption" {% if status == 'adoption' %}selected{% endif %}>В процессе усыновления</option>
+                        <option value="adopted" {% if status == 'adopted' %}selected{% endif %}>Усыновлено</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sort_by" class="form-label">Сортировка по</label>
+                    <select class="form-select" id="sort_by" name="sort_by">
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Дате поступления</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Имени</option>
+                        <option value="age_months" {% if sort_by == 'age_months' %}selected{% endif %}>Возрасту</option>
+                        <option value="breed" {% if sort_by == 'breed' %}selected{% endif %}>Породе</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="sort_order" class="form-label">Порядок</label>
+                    <select class="form-select" id="sort_order" name="sort_order">
+                        <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
+                        <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Применить
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <a href="{{ url_for('animals.index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-clockwise"></i> Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -41,6 +86,24 @@
                         </small>
                     </p>
                     <p class="card-text">{{ animal.description|truncate(100) }}</p>
+
+                    <div class="mb-2">
+                        {% if animal.status == 'available' %}
+                            <span class="badge bg-success">Доступно для усыновления</span>
+                        {% elif animal.status == 'adoption' %}
+                            <span class="badge bg-warning">В процессе усыновления</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Усыновлено</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if animal.adoptions_count and animal.adoptions_count > 0 %}
+                    <p class="card-text">
+                        <small class="text-info">
+                            <i class="bi bi-people"></i> Заявок на усыновление: {{ animal.adoptions_count }}
+                        </small>
+                    </p>
+                    {% endif %}
                 </div>
                 
                 <div class="card-footer">
@@ -50,14 +113,14 @@
                             <i class="bi bi-eye"></i> Просмотр
                         </a>
                         
-                        {% if current_user.is_authenticated and current_user.role_name in ['Администратор', 'Модератор'] %}
+                        {% if current_user.is_authenticated and current_user.role_name in ['admin', 'moderator'] %}
                         <a href="{{ url_for('animals.edit', id=animal.id) }}" 
                            class="btn btn-outline-warning">
                             <i class="bi bi-pencil"></i> Редактировать
                         </a>
                         {% endif %}
                         
-                        {% if current_user.is_authenticated and current_user.role_name == 'Администратор' %}
+                        {% if current_user.is_authenticated and current_user.role_name == 'admin' %}
                         <button type="button" class="btn btn-outline-danger" 
                                 data-bs-toggle="modal" 
                                 data-bs-target="#deleteModal{{ animal.id }}">
@@ -69,22 +132,22 @@
             </div>
         </div>
 
-        {% if current_user.is_authenticated and current_user.role_name == 'Администратор' %}
-        <!-- Модальное окно подтверждения удаления -->
+        {% if current_user.is_authenticated and current_user.role_name == 'admin' %}
+        <!-- подтверждение удаления -->
         <div class="modal fade" id="deleteModal{{ animal.id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Подтверждение удаления</h5>
+                        <h5 class="modal-title">Удаление животного</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         Вы уверены, что хотите удалить животное "{{ animal.name }}"?
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
                         <form action="{{ url_for('animals.delete', id=animal.id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-danger">Удалить</button>
+                            <button type="submit" class="btn btn-danger">Да, удалить</button>
                         </form>
                     </div>
                 </div>
@@ -97,21 +160,21 @@
     {% if total_pages > 1 %}
     <nav class="mt-4">
         <ul class="pagination justify-content-center">
-            {% if current_page > 1 %}
+            {% if page > 1 %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('animals.index', page=current_page-1) }}">Предыдущая</a>
+                <a class="page-link" href="{{ url_for('animals.index', page=page-1, sort_by=sort_by, sort_order=sort_order, status=status) }}">Предыдущая</a>
             </li>
             {% endif %}
             
-            {% for page in range(1, total_pages + 1) %}
-            <li class="page-item {% if page == current_page %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('animals.index', page=page) }}">{{ page }}</a>
+            {% for page_num in range(1, total_pages + 1) %}
+            <li class="page-item {% if page_num == page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('animals.index', page=page_num, sort_by=sort_by, sort_order=sort_order, status=status) }}">{{ page_num }}</a>
             </li>
             {% endfor %}
             
-            {% if current_page < total_pages %}
+            {% if page < total_pages %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('animals.index', page=current_page+1) }}">Следующая</a>
+                <a class="page-link" href="{{ url_for('animals.index', page=page+1, sort_by=sort_by, sort_order=sort_order, status=status) }}">Следующая</a>
             </li>
             {% endif %}
         </ul>

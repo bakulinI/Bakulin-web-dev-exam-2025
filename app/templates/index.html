@@ -23,7 +23,7 @@
         {% endif %}
     </div>
 
-    <!-- Фильтры -->
+    <!-- фильтры -->
     <form class="row g-3 mb-4">
         <div class="col-md-3">
             <input type="text" class="form-control" name="name" placeholder="Имя" value="{{ request.args.get('name', '') }}">
@@ -40,7 +40,7 @@
         </div>
     </form>
 
-    <!-- Список животных -->
+    <!-- список животных -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for animal in animals %}
             <div class="col">
@@ -123,7 +123,6 @@
         {% endfor %}
     </div>
 
-    <!-- Пагинация -->
     {% if pagination.pages > 1 %}
         <nav class="mt-4">
             <ul class="pagination justify-content-center">

@@ -1,6 +1,7 @@
 import os
 from flask import Flask, redirect, url_for
 from flask_login import LoginManager
+import markdown
 
 from .blueprints import animals
 from .db import DBConnector
@@ -45,6 +46,13 @@ def create_app(test_config=None):
     
     # Инициализация blueprint'ов
     animals.init_app(app)
+
+    # Регистрация фильтра Markdown
+    @app.template_filter('markdown')
+    def markdown_filter(text):
+        if text:
+            return markdown.markdown(text, extensions=['extra', 'codehilite'])
+        return ''
 
     # Создаем директорию для загрузки файлов
     upload_folder = os.path.join(app.static_folder, 'uploads')

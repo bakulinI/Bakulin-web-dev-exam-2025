@@ -6,26 +6,31 @@ class AnimalRepository:
         self.db = db_connector
 
     def create(self, animal_data):
-        """Создание нового животного"""
-        cursor = self.db.connect().cursor()
-        cursor.execute("""
-            INSERT INTO animals (name, description, age_months, breed, gender, status)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            animal_data['name'],
-            animal_data.get('description', ''),
-            animal_data['age_months'],
-            animal_data['breed'],
-            animal_data['gender'],
-            animal_data.get('status', 'available')
-        ))
-        self.db.connect().commit()
-        animal_id = cursor.lastrowid
-        cursor.close()
-        return animal_id
+        connection = self.db.connect()
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                INSERT INTO animals (name, description, age_months, breed, gender, status)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                animal_data['name'],
+                animal_data.get('description', ''),
+                animal_data['age_months'],
+                animal_data['breed'],
+                animal_data['gender'],
+                animal_data.get('status', 'available')
+            ))
+            connection.commit()
+            animal_id = cursor.lastrowid
+            cursor.close()
+            return animal_id
+        except Exception as e:
+            connection.rollback()
+            raise e
+        finally:
+            connection.close()
 
     def get_by_id(self, animal_id):
-        """Получение животного по ID"""
         cursor = self.db.connect().cursor(dictionary=True)
         cursor.execute("""
             SELECT a.*, 
@@ -41,11 +46,8 @@ class AnimalRepository:
         return animal
 
     def get_paginated(self, page=1, sort_by='created_at', sort_order='desc', status=None):
-        """Получение списка животных с пагинацией"""
-        per_page = 9  # Количество животных на странице
+        per_page = 6
         offset = (page - 1) * per_page
-        
-        # Базовый запрос
         query = """
             SELECT 
                 a.*,
@@ -54,18 +56,17 @@ class AnimalRepository:
             FROM animals a
             WHERE 1=1
         """
-        
-        # Добавляем фильтр по статусу, если указан
+
         if status:
             query += " AND a.status = %s"
-        
-        # Добавляем сортировку
-        query += f" ORDER BY a.status = 'available' DESC, a.{sort_by} {sort_order}"
-        
-        # Добавляем пагинацию
+
+        if sort_by == 'created_at':
+            query += " ORDER BY a.status = 'available' DESC, a.created_at DESC"
+        else:
+            query += f" ORDER BY a.status = 'available' DESC, a.{sort_by} {sort_order}"
+
         query += " LIMIT %s OFFSET %s"
-        
-        # Формируем параметры запроса
+
         params = []
         if status:
             params.append(status)
@@ -84,7 +85,6 @@ class AnimalRepository:
             return []
 
     def get_total_count(self, status=None):
-        """Получение общего количества животных"""
         query = "SELECT COUNT(*) as total FROM animals"
         params = []
         
@@ -105,7 +105,6 @@ class AnimalRepository:
             return 0
 
     def search(self, query=None, status=None, gender=None, breed=None):
-        """Поиск животных по параметрам"""
         cursor = self.db.connect().cursor(dictionary=True)
         
         sql = """
@@ -142,7 +141,6 @@ class AnimalRepository:
         return animals
 
     def update(self, animal_id, animal_data):
-        """Обновление данных животного"""
         cursor = self.db.connect().cursor()
         cursor.execute("""
             UPDATE animals
@@ -166,8 +164,14 @@ class AnimalRepository:
         cursor.close()
 
     def delete(self, animal_id):
-        """Удаление животного"""
-        cursor = self.db.connect().cursor()
-        cursor.execute("DELETE FROM animals WHERE id = %s", (animal_id,))
-        self.db.connect().commit()
-        cursor.close()
+        connection = self.db.connect()
+        try:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM animals WHERE id = %s", (animal_id,))
+            connection.commit()
+            cursor.close()
+        except Exception as e:
+            connection.rollback()
+            raise e
+        finally:
+            connection.close()

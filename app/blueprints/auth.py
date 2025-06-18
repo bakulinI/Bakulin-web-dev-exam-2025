@@ -1,8 +1,6 @@
 from functools import wraps
 from flask import Blueprint, request, render_template, url_for, flash, redirect, current_app
-from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user, login_required
-from app.repositories import UserRepository
-from app.db import db
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 import hashlib
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -14,7 +12,6 @@ login_manager.login_message_category = 'warning'
 
 
 def public_route(f):
-    """Декоратор для публичных маршрутов, доступных без аутентификации"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         return f(*args, **kwargs)

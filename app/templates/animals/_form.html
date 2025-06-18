@@ -2,25 +2,25 @@
 <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
     <div class="mb-3">
         <label for="name" class="form-label">Кличка</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{ form.name.data or '' }}" required>
+        <input type="text" class="form-control" id="name" name="name" value="{{ form.name or '' }}" required>
         <div class="invalid-feedback">Пожалуйста, введите кличку животного</div>
     </div>
 
     <div class="mb-3">
         <label for="description" class="form-label">Описание</label>
-        <textarea class="form-control" id="description" name="description" rows="5" required>{{ form.description.data or '' }}</textarea>
+        <textarea class="form-control" id="description" name="description" rows="5" required>{{ form.description or '' }}</textarea>
         <div class="invalid-feedback">Пожалуйста, введите описание животного</div>
     </div>
 
     <div class="mb-3">
         <label for="age_months" class="form-label">Возраст (в месяцах)</label>
-        <input type="number" class="form-control" id="age_months" name="age_months" value="{{ form.age_months.data or '' }}" min="0" required>
+        <input type="number" class="form-control" id="age_months" name="age_months" value="{{ form.age_months or '' }}" min="0" required>
         <div class="invalid-feedback">Пожалуйста, введите возраст животного</div>
     </div>
 
     <div class="mb-3">
         <label for="breed" class="form-label">Порода</label>
-        <input type="text" class="form-control" id="breed" name="breed" value="{{ form.breed.data or '' }}" required>
+        <input type="text" class="form-control" id="breed" name="breed" value="{{ form.breed or '' }}" required>
         <div class="invalid-feedback">Пожалуйста, введите породу животного</div>
     </div>
 
@@ -28,8 +28,8 @@
         <label for="gender" class="form-label">Пол</label>
         <select class="form-select" id="gender" name="gender" required>
             <option value="">Выберите пол</option>
-            <option value="male" {% if form.gender.data == 'male' %}selected{% endif %}>Самец</option>
-            <option value="female" {% if form.gender.data == 'female' %}selected{% endif %}>Самка</option>
+            <option value="male" {% if form.gender == 'male' %}selected{% endif %}>Самец</option>
+            <option value="female" {% if form.gender == 'female' %}selected{% endif %}>Самка</option>
         </select>
         <div class="invalid-feedback">Пожалуйста, выберите пол животного</div>
     </div>
@@ -38,9 +38,9 @@
         <label for="status" class="form-label">Статус</label>
         <select class="form-select" id="status" name="status" required>
             <option value="">Выберите статус</option>
-            <option value="available" {% if form.status.data == 'available' %}selected{% endif %}>Доступен</option>
-            <option value="adoption" {% if form.status.data == 'adoption' %}selected{% endif %}>В процессе усыновления</option>
-            <option value="adopted" {% if form.status.data == 'adopted' %}selected{% endif %}>Усыновлен</option>
+            <option value="available" {% if form.status == 'available' %}selected{% endif %}>Доступен</option>
+            <option value="adoption" {% if form.status == 'adoption' %}selected{% endif %}>В процессе усыновления</option>
+            <option value="adopted" {% if form.status == 'adopted' %}selected{% endif %}>Усыновлен</option>
         </select>
         <div class="invalid-feedback">Пожалуйста, выберите статус животного</div>
     </div>
@@ -59,7 +59,6 @@
     </div>
 </form>
 
-{% if not is_edit %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script>
@@ -71,10 +70,9 @@
         placeholder: 'Введите описание животного...'
     });
 </script>
-{% endif %}
 
 <script>
-    // Валидация формы
+    // валидация формы
     (function () {
         'use strict'
         const forms = document.querySelectorAll('.needs-validation')

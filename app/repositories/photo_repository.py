@@ -2,15 +2,30 @@ class PhotoRepository:
     def __init__(self, db_connector):
         self.db_connector = db_connector
 
-    def add_photo(self, animal_id, filename, mime_type):
+    def create(self, photo_data):
         connection = self.db_connector.connect()
-        with connection.cursor() as cursor:
+        try:
+            cursor = connection.cursor()
             cursor.execute("""
                 INSERT INTO animal_photos (animal_id, filename, mime_type)
                 VALUES (%s, %s, %s)
-            """, (animal_id, filename, mime_type))
+            """, (photo_data['animal_id'], photo_data['filename'], photo_data.get('mime_type', 'image/jpeg')))
             connection.commit()
-            return cursor.lastrowid
+            photo_id = cursor.lastrowid
+            cursor.close()
+            return photo_id
+        except Exception as e:
+            connection.rollback()
+            raise e
+        finally:
+            connection.close()
+
+    def get_by_animal_id(self, animal_id):
+        with self.db_connector.connect().cursor(dictionary=True) as cursor:
+            cursor.execute("""
+                SELECT * FROM animal_photos WHERE animal_id = %s
+            """, (animal_id,))
+            return cursor.fetchall()
 
     def get_by_animal(self, animal_id):
         with self.db_connector.connect().cursor(named_tuple=True) as cursor:
@@ -21,7 +36,15 @@ class PhotoRepository:
 
     def delete(self, photo_id):
         connection = self.db_connector.connect()
-        with connection.cursor() as cursor:
+        try:
+            cursor = connection.cursor()
             cursor.execute("DELETE FROM animal_photos WHERE id = %s", (photo_id,))
             connection.commit()
-            return cursor.rowcount > 0
+            result = cursor.rowcount > 0
+            cursor.close()
+            return result
+        except Exception as e:
+            connection.rollback()
+            raise e
+        finally:
+            connection.close()
