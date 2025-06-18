@@ -6,3 +6,4 @@
 __pycache__
 .idea/vcs.xml
 app/config.py
+/app/static/uploads
