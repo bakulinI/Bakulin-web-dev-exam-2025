@@ -33,7 +33,7 @@ class DBConnector:
                 self._connection = mysql.connector.connect(**self.get_config())
             return self._connection
         except Error as e:
-            current_app.logger.error(f"Error connecting to MySQL: {str(e)}")
+            current_app.logger.error(f"Errors connecting to MySQL: {str(e)}")
             raise
 
 db = DBConnector()
