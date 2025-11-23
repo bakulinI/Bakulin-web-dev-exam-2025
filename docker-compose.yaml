@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # База данных MariaDB
+  db:
+    image: mariadb:11.5
+    container_name: bakulin-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bakulinexam
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    volumes:
+      # Volume для данных базы данных (чтобы данные сохранялись)
+      - db_data:/var/lib/mysql
+      # Volume для SQL файлов инициализации (полный дамп со структурой и данными)
+      - ./database.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      # Volume для логов базы данных
+      - db_logs:/var/log/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - bakulin-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Flask веб-приложение
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bakulin-web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Переменные окружения для подключения к БД
+      MYSQL_HOST: db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+      MYSQL_DATABASE: bakulinexam
+      SECRET_KEY: production-secret-key-change-in-deployment
+      FLASK_ENV: production
+      FLASK_DEBUG: "False"
+    volumes:
+      # Volume для загруженных файлов (фото животных)
+      - uploads_data:/app/app/static/uploads
+      # Volume для логов приложения
+      - app_logs:/app/logs
+    ports:
+      - "5000:5000"
+    networks:
+      - bakulin-network
+
+# Определение volumes для сохранения данных
+volumes:
+  # Данные базы данных - будут сохраняться между перезапусками
+  db_data:
+    driver: local
+  # Логи базы данных
+  db_logs:
+    driver: local
+  # Загруженные файлы приложения
+  uploads_data:
+    driver: local
+  # Логи приложения
+  app_logs:
+    driver: local
+
+# Сеть для связи между контейнерами
+networks:
+  bakulin-network:
+    driver: bridge
+
