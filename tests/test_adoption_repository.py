@@ -1,6 +1,6 @@
 import pytest
 from app.repositories.adoption_repository import AdoptionRepository
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 class TestAdoptionRepository:
     def test_create_adoption(self, db_connector):
@@ -9,9 +9,8 @@ class TestAdoptionRepository:
 
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_connection.cursor.return_value = mock_cursor
         mock_cursor.lastrowid = 1
-        db_connector.connect.return_value = mock_connection
+        mock_connection.cursor.return_value = mock_cursor
 
         adoption_data = {
             'animal_id': 1,
@@ -19,7 +18,8 @@ class TestAdoptionRepository:
             'contact_info': 'test@example.com'
         }
 
-        result = repo.create(adoption_data)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.create(adoption_data)
 
         self.assertEqual(result, 1)
         # Should execute 3 queries: INSERT adoption, UPDATE animal status, UPDATE other adoptions
@@ -43,9 +43,9 @@ class TestAdoptionRepository:
             'username': 'testuser'
         }
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_id(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_id(1)
 
         self.assertEqual(result['id'], 1)
         self.assertEqual(result['status'], 'pending')
@@ -64,9 +64,9 @@ class TestAdoptionRepository:
             'status': 'pending'
         }
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_user_and_animal(1, 1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_user_and_animal(1, 1)
 
         self.assertEqual(result['id'], 1)
 
@@ -77,9 +77,9 @@ class TestAdoptionRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        repo.update_status(1, 'accepted')
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            repo.update_status(1, 'accepted')
 
         # Should execute 3 queries: UPDATE status, UPDATE animal, UPDATE other adoptions
         self.assertEqual(mock_cursor.execute.call_count, 3)
@@ -92,9 +92,9 @@ class TestAdoptionRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        repo.update_status(1, 'rejected')
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            repo.update_status(1, 'rejected')
 
         # Should execute 1 query: UPDATE status
         self.assertEqual(mock_cursor.execute.call_count, 1)
@@ -119,9 +119,9 @@ class TestAdoptionRepository:
             }
         ]
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_animal_id(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_animal_id(1)
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['id'], 1)
@@ -143,9 +143,9 @@ class TestAdoptionRepository:
             }
         ]
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_user_id(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_user_id(1)
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['animal_name'], 'Test Dog')

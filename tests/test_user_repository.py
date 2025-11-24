@@ -1,6 +1,6 @@
 import pytest
 from app.repositories.user_repository import UserRepository
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 class TestUserRepository:
     def test_get_by_id(self, db_connector):
@@ -18,9 +18,9 @@ class TestUserRepository:
             role_name='user'
         )
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_id(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_id(1)
 
         self.assertEqual(result.id, 1)
         self.assertEqual(result.username, 'testuser')
@@ -40,9 +40,9 @@ class TestUserRepository:
             role_name='user'
         )
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_credentials('testuser', 'hashed_password')
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_credentials('testuser', 'hashed_password')
 
         self.assertEqual(result.username, 'testuser')
 
@@ -52,11 +52,11 @@ class TestUserRepository:
 
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_connection.cursor.return_value = mock_cursor
         mock_cursor.lastrowid = 1
-        db_connector.connect.return_value = mock_connection
+        mock_connection.cursor.return_value = mock_cursor
 
-        result = repo.create('testuser', 'hashed_password', 'Test', 'User')
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.create('testuser', 'hashed_password', 'Test', 'User')
 
         self.assertEqual(result, 1)
         mock_cursor.execute.assert_called_once()
@@ -69,9 +69,9 @@ class TestUserRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        repo.update(1, 'Updated', 'User', None, 3)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            repo.update(1, 'Updated', 'User', None, 3)
 
         mock_cursor.execute.assert_called_once()
         mock_connection.commit.assert_called_once()
@@ -83,9 +83,9 @@ class TestUserRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        repo.update_password(1, 'new_hashed_password')
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            repo.update_password(1, 'new_hashed_password')
 
         mock_cursor.execute.assert_called_once()
         mock_connection.commit.assert_called_once()
@@ -96,11 +96,11 @@ class TestUserRepository:
 
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_connection.cursor.return_value = mock_cursor
         mock_cursor.rowcount = 1
-        db_connector.connect.return_value = mock_connection
+        mock_connection.cursor.return_value = mock_cursor
 
-        result = repo.delete(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.delete(1)
 
         self.assertEqual(result, True)
         mock_cursor.execute.assert_called_once_with("DELETE FROM users WHERE id = %s", (1,))

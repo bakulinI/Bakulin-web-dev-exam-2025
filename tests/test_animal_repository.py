@@ -1,18 +1,11 @@
 import pytest
 from app.repositories.animal_repository import AnimalRepository
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, MagicMock, patch
 
 class TestAnimalRepository:
     def test_create_animal(self, db_connector):
         """Test creating a new animal."""
         repo = AnimalRepository(db_connector)
-
-        # Mock the database connection and cursor
-        mock_connection = Mock()
-        mock_cursor = Mock()
-        mock_connection.cursor.return_value = mock_cursor
-        mock_cursor.lastrowid = 1
-        db_connector.connect.return_value = mock_connection
 
         animal_data = {
             'name': 'Test Dog',
@@ -23,7 +16,13 @@ class TestAnimalRepository:
             'status': 'available'
         }
 
-        result = repo.create(animal_data)
+        mock_connection = Mock()
+        mock_cursor = Mock()
+        mock_cursor.lastrowid = 1
+        mock_connection.cursor.return_value = mock_cursor
+
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.create(animal_data)
 
         self.assertEqual(result, 1)
         mock_cursor.execute.assert_called_once()
@@ -47,9 +46,9 @@ class TestAnimalRepository:
             'photo_filename': 'test.jpg'
         }
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_id(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_id(1)
 
         self.assertEqual(result['id'], 1)
         self.assertEqual(result['name'], 'Test Dog')
@@ -75,9 +74,9 @@ class TestAnimalRepository:
             }
         ]
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_paginated(page=1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_paginated(page=1)
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['name'], 'Test Dog')
@@ -89,7 +88,6 @@ class TestAnimalRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
         animal_data = {
             'name': 'Updated Dog',
@@ -100,7 +98,8 @@ class TestAnimalRepository:
             'status': 'available'
         }
 
-        repo.update(1, animal_data)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            repo.update(1, animal_data)
 
         mock_cursor.execute.assert_called_once()
         # Note: update method may not call commit if connection is passed
@@ -112,9 +111,9 @@ class TestAnimalRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        repo.delete(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            repo.delete(1)
 
         mock_cursor.execute.assert_called_once_with("DELETE FROM animals WHERE id = %s", (1,))
         mock_connection.commit.assert_called_once()
@@ -139,9 +138,9 @@ class TestAnimalRepository:
             }
         ]
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.search(query='dog')
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.search(query='dog')
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['name'], 'Test Dog')

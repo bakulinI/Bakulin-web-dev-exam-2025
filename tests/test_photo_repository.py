@@ -1,6 +1,6 @@
 import pytest
 from app.repositories.photo_repository import PhotoRepository
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 class TestPhotoRepository:
     def test_create_photo(self, db_connector):
@@ -9,9 +9,8 @@ class TestPhotoRepository:
 
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_connection.cursor.return_value = mock_cursor
         mock_cursor.lastrowid = 1
-        db_connector.connect.return_value = mock_connection
+        mock_connection.cursor.return_value = mock_cursor
 
         photo_data = {
             'animal_id': 1,
@@ -19,7 +18,8 @@ class TestPhotoRepository:
             'mime_type': 'image/jpeg'
         }
 
-        result = repo.create(photo_data)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.create(photo_data)
 
         self.assertEqual(result, 1)
         mock_cursor.execute.assert_called_once()
@@ -46,9 +46,9 @@ class TestPhotoRepository:
             }
         ]
         mock_connection.cursor.return_value = mock_cursor
-        db_connector.connect.return_value = mock_connection
 
-        result = repo.get_by_animal_id(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.get_by_animal_id(1)
 
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]['filename'], 'test1.jpg')
@@ -60,11 +60,11 @@ class TestPhotoRepository:
 
         mock_connection = Mock()
         mock_cursor = Mock()
-        mock_connection.cursor.return_value = mock_cursor
         mock_cursor.rowcount = 1
-        db_connector.connect.return_value = mock_connection
+        mock_connection.cursor.return_value = mock_cursor
 
-        result = repo.delete(1)
+        with patch.object(db_connector, 'connect', return_value=mock_connection):
+            result = repo.delete(1)
 
         self.assertEqual(result, True)
         mock_cursor.execute.assert_called_once_with("DELETE FROM animal_photos WHERE id = %s", (1,))
