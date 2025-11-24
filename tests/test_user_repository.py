@@ -7,6 +7,7 @@ class TestUserRepository:
         """Test retrieving a user by ID."""
         repo = UserRepository(db_connector)
 
+        mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.fetchone.return_value = Mock(
             id=1,
@@ -16,17 +17,19 @@ class TestUserRepository:
             middle_name=None,
             role_name='user'
         )
-        db_connector.connect.return_value.cursor.return_value = mock_cursor
+        mock_connection.cursor.return_value = mock_cursor
+        db_connector.connect.return_value = mock_connection
 
         result = repo.get_by_id(1)
 
-        assert result.id == 1
-        assert result.username == 'testuser'
+        self.assertEqual(result.id, 1)
+        self.assertEqual(result.username, 'testuser')
 
     def test_get_by_credentials(self, db_connector):
         """Test retrieving a user by username and password hash."""
         repo = UserRepository(db_connector)
 
+        mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.fetchone.return_value = Mock(
             id=1,
@@ -36,11 +39,12 @@ class TestUserRepository:
             middle_name=None,
             role_name='user'
         )
-        db_connector.connect.return_value.cursor.return_value = mock_cursor
+        mock_connection.cursor.return_value = mock_cursor
+        db_connector.connect.return_value = mock_connection
 
         result = repo.get_by_credentials('testuser', 'hashed_password')
 
-        assert result.username == 'testuser'
+        self.assertEqual(result.username, 'testuser')
 
     def test_create_user(self, db_connector):
         """Test creating a new user."""
@@ -54,7 +58,7 @@ class TestUserRepository:
 
         result = repo.create('testuser', 'hashed_password', 'Test', 'User')
 
-        assert result == 1
+        self.assertEqual(result, 1)
         mock_cursor.execute.assert_called_once()
         mock_connection.commit.assert_called_once()
 
@@ -98,6 +102,6 @@ class TestUserRepository:
 
         result = repo.delete(1)
 
-        assert result == True
+        self.assertEqual(result, True)
         mock_cursor.execute.assert_called_once_with("DELETE FROM users WHERE id = %s", (1,))
         mock_connection.commit.assert_called_once()

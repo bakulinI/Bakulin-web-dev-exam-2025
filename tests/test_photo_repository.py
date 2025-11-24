@@ -21,7 +21,7 @@ class TestPhotoRepository:
 
         result = repo.create(photo_data)
 
-        assert result == 1
+        self.assertEqual(result, 1)
         mock_cursor.execute.assert_called_once()
         mock_connection.commit.assert_called_once()
 
@@ -29,6 +29,7 @@ class TestPhotoRepository:
         """Test retrieving photos by animal ID."""
         repo = PhotoRepository(db_connector)
 
+        mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.fetchall.return_value = [
             {
@@ -44,13 +45,14 @@ class TestPhotoRepository:
                 'animal_id': 1
             }
         ]
-        db_connector.connect.return_value.cursor.return_value = mock_cursor
+        mock_connection.cursor.return_value = mock_cursor
+        db_connector.connect.return_value = mock_connection
 
         result = repo.get_by_animal_id(1)
 
-        assert len(result) == 2
-        assert result[0]['filename'] == 'test1.jpg'
-        assert result[1]['filename'] == 'test2.jpg'
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['filename'], 'test1.jpg')
+        self.assertEqual(result[1]['filename'], 'test2.jpg')
 
     def test_delete_photo(self, db_connector):
         """Test deleting a photo record."""
@@ -64,6 +66,6 @@ class TestPhotoRepository:
 
         result = repo.delete(1)
 
-        assert result == True
+        self.assertEqual(result, True)
         mock_cursor.execute.assert_called_once_with("DELETE FROM animal_photos WHERE id = %s", (1,))
         mock_connection.commit.assert_called_once()
