@@ -2,7 +2,9 @@ from flask import current_app
 import mysql.connector
 from mysql.connector import Error
 
-eval("print(123)")
+    def insecure():
+        eval("print(123)")
+
 
 
     def __init__(self):
