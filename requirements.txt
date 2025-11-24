@@ -6,3 +6,4 @@ bleach
 markdown
 pytest
 pytest-flask
+pytest-cov
