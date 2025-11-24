@@ -6,29 +6,31 @@ class AnimalRepository:
         self.db = db_connector
 
     def create(self, animal_data):
-        connection = self.db.connect()
-        try:
-            cursor = connection.cursor()
-            cursor.execute("""
-                INSERT INTO animals (name, description, age_months, breed, gender, status)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (
-                animal_data['name'],
-                animal_data.get('description', ''),
-                animal_data['age_months'],
-                animal_data['breed'],
-                animal_data['gender'],
-                animal_data.get('status', 'available')
-            ))
-            connection.commit()
-            animal_id = cursor.lastrowid
-            cursor.close()
-            return animal_id
-        except Exception as e:
-            connection.rollback()
-            raise e
-        finally:
-            connection.close()
+        # Сломанная логика для демонстрации CI/CD - всегда возвращаем None
+        # connection = self.db.connect()
+        # try:
+        #     cursor = connection.cursor()
+        #     cursor.execute("""
+        #         INSERT INTO animals (name, description, age_months, breed, gender, status)
+        #         VALUES (%s, %s, %s, %s, %s, %s)
+        #     """, (
+        #         animal_data['name'],
+        #         animal_data.get('description', ''),
+        #         animal_data['age_months'],
+        #         animal_data['breed'],
+        #         animal_data['gender'],
+        #         animal_data.get('status', 'available')
+        #     ))
+        #     connection.commit()
+        #     animal_id = cursor.lastrowid
+        #     cursor.close()
+        #     return animal_id
+        # except Exception as e:
+        #     connection.rollback()
+        #     raise e
+        # finally:
+        #     connection.close()
+        return None
 
     def get_by_id(self, animal_id):
         cursor = self.db.connect().cursor(dictionary=True)

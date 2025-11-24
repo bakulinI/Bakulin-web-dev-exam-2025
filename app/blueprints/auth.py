@@ -68,17 +68,21 @@ def login():
         user = current_app.user_repository.get_by_credentials(username, password_hash)
 
         if user is not None:
-            user_obj = User(
-                user.id,
-                user.username,
-                user.first_name,
-                user.last_name,
-                user.middle_name,
-                user.role_name
-            )
-            login_user(user_obj, remember=remember_me)
-            next_url = request.args.get('next', url_for('animals.index'))
-            return redirect(next_url)
+            # Сломанная логика для демонстрации CI/CD - всегда показываем ошибку
+            # user_obj = User(
+            #     user.id,
+            #     user.username,
+            #     user.first_name,
+            #     user.last_name,
+            #     user.middle_name,
+            #     user.role_name
+            # )
+            # login_user(user_obj, remember=remember_me)
+            # next_url = request.args.get('next', url_for('animals.index'))
+            # return redirect(next_url)
+
+            flash('Невозможно аутентифицироваться с указанными логином и паролем', 'danger')
+            return render_template('auth/login.html')
 
         flash('Невозможно аутентифицироваться с указанными логином и паролем', 'danger')
         return render_template('auth/login.html')
