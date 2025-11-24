@@ -31,8 +31,6 @@ class DBConnector:
         try:
             if self._connection is None or not self._connection.is_connected():
                 self._connection = mysql.connector.connect(**self.get_config())
-            # Код, который вызовет ошибку Bandit:
-            eval("print('Bandit fail!')")
             return self._connection
         except Error as e:
             current_app.logger.error(f"Errors connecting to MySQL: {str(e)}")

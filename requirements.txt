@@ -4,3 +4,6 @@ Flask-Login==0.6.3
 Flask
 bleach
 markdown
+pytest
+pytest-flask
+pytest-cov

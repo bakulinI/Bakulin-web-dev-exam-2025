@@ -1,0 +1,69 @@
+import pytest
+from app.repositories.photo_repository import PhotoRepository
+from unittest.mock import Mock
+
+class TestPhotoRepository:
+    def test_create_photo(self, db_connector):
+        """Test creating a new photo record."""
+        repo = PhotoRepository(db_connector)
+
+        mock_connection = Mock()
+        mock_cursor = Mock()
+        mock_connection.cursor.return_value = mock_cursor
+        mock_cursor.lastrowid = 1
+        db_connector.connect.return_value = mock_connection
+
+        photo_data = {
+            'animal_id': 1,
+            'filename': 'test.jpg',
+            'mime_type': 'image/jpeg'
+        }
+
+        result = repo.create(photo_data)
+
+        assert result == 1
+        mock_cursor.execute.assert_called_once()
+        mock_connection.commit.assert_called_once()
+
+    def test_get_by_animal_id(self, db_connector):
+        """Test retrieving photos by animal ID."""
+        repo = PhotoRepository(db_connector)
+
+        mock_cursor = Mock()
+        mock_cursor.fetchall.return_value = [
+            {
+                'id': 1,
+                'filename': 'test1.jpg',
+                'mime_type': 'image/jpeg',
+                'animal_id': 1
+            },
+            {
+                'id': 2,
+                'filename': 'test2.jpg',
+                'mime_type': 'image/jpeg',
+                'animal_id': 1
+            }
+        ]
+        db_connector.connect.return_value.cursor.return_value = mock_cursor
+
+        result = repo.get_by_animal_id(1)
+
+        assert len(result) == 2
+        assert result[0]['filename'] == 'test1.jpg'
+        assert result[1]['filename'] == 'test2.jpg'
+
+    def test_delete_photo(self, db_connector):
+        """Test deleting a photo record."""
+        repo = PhotoRepository(db_connector)
+
+        mock_connection = Mock()
+        mock_cursor = Mock()
+        mock_connection.cursor.return_value = mock_cursor
+        mock_cursor.rowcount = 1
+        db_connector.connect.return_value = mock_connection
+
+        result = repo.delete(1)
+
+        assert result == True
+        mock_cursor.execute.assert_called_once_with("DELETE FROM animal_photos WHERE id = %s", (1,))
+        mock_connection.commit.assert_called_once()
