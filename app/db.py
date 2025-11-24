@@ -2,6 +2,8 @@ from flask import current_app
 import mysql.connector
 from mysql.connector import Error
 
+eval("print(123)")
+
 
     def __init__(self):
         self.app = None
