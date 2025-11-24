@@ -2,7 +2,7 @@ from flask import current_app
 import mysql.connector
 from mysql.connector import Error
 
-class DBConnector:
+
     def __init__(self):
         self.app = None
         self._connection = None
