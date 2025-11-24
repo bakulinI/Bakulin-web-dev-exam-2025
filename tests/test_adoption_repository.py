@@ -1,8 +1,9 @@
 import pytest
 from app.repositories.adoption_repository import AdoptionRepository
 from unittest.mock import Mock, patch
+import unittest
 
-class TestAdoptionRepository:
+class TestAdoptionRepository(unittest.TestCase):
     def test_create_adoption(self, db_connector):
         """Test creating a new adoption request."""
         repo = AdoptionRepository(db_connector)

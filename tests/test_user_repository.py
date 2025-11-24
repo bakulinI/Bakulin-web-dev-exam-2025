@@ -1,8 +1,9 @@
 import pytest
 from app.repositories.user_repository import UserRepository
 from unittest.mock import Mock, patch
+import unittest
 
-class TestUserRepository:
+class TestUserRepository(unittest.TestCase):
     def test_get_by_id(self, db_connector):
         """Test retrieving a user by ID."""
         repo = UserRepository(db_connector)
@@ -19,6 +20,8 @@ class TestUserRepository:
         )
         mock_connection.cursor.return_value = mock_cursor
 
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             result = repo.get_by_id(1)
 
@@ -40,6 +43,8 @@ class TestUserRepository:
             role_name='user'
         )
         mock_connection.cursor.return_value = mock_cursor
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
 
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             result = repo.get_by_credentials('testuser', 'hashed_password')
@@ -54,6 +59,8 @@ class TestUserRepository:
         mock_cursor = Mock()
         mock_cursor.lastrowid = 1
         mock_connection.cursor.return_value = mock_cursor
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
 
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             result = repo.create('testuser', 'hashed_password', 'Test', 'User')
@@ -69,6 +76,8 @@ class TestUserRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
 
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             repo.update(1, 'Updated', 'User', None, 3)
@@ -83,6 +92,8 @@ class TestUserRepository:
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
 
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             repo.update_password(1, 'new_hashed_password')
@@ -98,6 +109,8 @@ class TestUserRepository:
         mock_cursor = Mock()
         mock_cursor.rowcount = 1
         mock_connection.cursor.return_value = mock_cursor
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
 
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             result = repo.delete(1)

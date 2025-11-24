@@ -1,8 +1,9 @@
 import pytest
 from app.repositories.photo_repository import PhotoRepository
 from unittest.mock import Mock, patch
+import unittest
 
-class TestPhotoRepository:
+class TestPhotoRepository(unittest.TestCase):
     def test_create_photo(self, db_connector):
         """Test creating a new photo record."""
         repo = PhotoRepository(db_connector)

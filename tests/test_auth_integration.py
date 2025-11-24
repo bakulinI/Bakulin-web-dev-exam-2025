@@ -1,8 +1,9 @@
 import pytest
 from flask import url_for
 from unittest.mock import Mock, patch
+import unittest
 
-class TestAuthIntegration:
+class TestAuthIntegration(unittest.TestCase):
     def test_login_page_get(self, client):
         """Test accessing the login page."""
         response = client.get('/auth/login')

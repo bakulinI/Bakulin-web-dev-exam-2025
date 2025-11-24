@@ -1,8 +1,9 @@
 import pytest
 from app.repositories.animal_repository import AnimalRepository
 from unittest.mock import Mock, MagicMock, patch
+import unittest
 
-class TestAnimalRepository:
+class TestAnimalRepository(unittest.TestCase):
     def test_create_animal(self, db_connector):
         """Test creating a new animal."""
         repo = AnimalRepository(db_connector)
@@ -47,6 +48,8 @@ class TestAnimalRepository:
         }
         mock_connection.cursor.return_value = mock_cursor
 
+        mock_connection.__enter__ = Mock(return_value=mock_connection)
+        mock_connection.__exit__ = Mock(return_value=None)
         with patch.object(db_connector, 'connect', return_value=mock_connection):
             result = repo.get_by_id(1)
 
